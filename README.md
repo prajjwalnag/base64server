@@ -419,4 +419,4 @@ Found a bug or have a feature request? Feel free to open an issue or submit a PR
 
 ---
 
-**Made with** ✨ **by MWR Agency under Claude Ford's leadership at Rigmi**
+**Made with** ✨ **by MWR Agency**
