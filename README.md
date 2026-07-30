@@ -393,6 +393,20 @@ CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000"]
 
 ---
 
+## Credits & Attribution
+
+### Leadership & Vision
+- **Claude Ford** - Project Lead at [Rigmi](https://rigmi.com)
+
+### Development
+- **MWR Agency** - Product Design & Implementation
+- **AI-Assisted Development** - Built with Claude Code
+
+### Special Thanks
+This project was developed under the leadership and vision of Claude Ford at Rigmi, with design and implementation by MWR Agency, leveraging advanced AI development tools.
+
+---
+
 ## License
 
 MIT License - feel free to use for personal and commercial projects.
@@ -405,4 +419,4 @@ Found a bug or have a feature request? Feel free to open an issue or submit a PR
 
 ---
 
-**Made with** ✨ **by Claude Code**
+**Made with** ✨ **by MWR Agency under Claude Ford's leadership at Rigmi**
