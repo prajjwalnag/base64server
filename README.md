@@ -102,8 +102,18 @@ curl -X POST http://localhost:5000/api/v1/decode \
 ## 🛠️ Development
 
 ### 📋 Requirements
-- Python 3.8+
+- **Python 3.8+** (3.9, 3.10, 3.11, 3.12 supported)
 - pip
+
+### ✅ Python Version Support
+
+| Version | Status | Notes |
+|---------|--------|-------|
+| Python 3.8 | ✅ Supported | Minimum version |
+| Python 3.9 | ✅ Supported | Recommended |
+| Python 3.10 | ✅ Supported | Fully tested |
+| Python 3.11 | ✅ Supported | Fully tested |
+| Python 3.12 | ✅ Supported | Latest stable |
 
 ### 🔧 Environment Setup
 ```bash
