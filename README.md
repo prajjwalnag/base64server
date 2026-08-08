@@ -117,22 +117,49 @@ curl -X POST http://localhost:5000/api/v1/decode \
 
 ### 🔧 Environment Setup
 
-#### On Windows
+#### Step 1️⃣: Create Virtual Environment
+
+**Windows:**
 ```bash
 python -m venv .venv
+```
+
+**macOS/Linux:**
+```bash
+python3 -m venv .venv
+```
+
+#### Step 2️⃣: Activate Virtual Environment
+
+**Windows (Command Prompt):**
+```bash
 .venv\Scripts\activate
+```
+
+**Windows (PowerShell):**
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+**macOS/Linux (Bash/Zsh):**
+```bash
+source .venv/bin/activate
+```
+
+✅ **After activation, your prompt will show** `(.venv)` prefix
+
+#### Step 3️⃣: Install Dependencies & Run
+
+```bash
 pip install -r base64server/requirements.txt
 cd base64server
 python app.py
 ```
 
-#### On macOS/Linux
+#### Deactivate Virtual Environment (when done)
+
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r base64server/requirements.txt
-cd base64server
-python3 app.py
+deactivate
 ```
 
 #### Check Python Version
