@@ -116,12 +116,53 @@ curl -X POST http://localhost:5000/api/v1/decode \
 | Python 3.12 | ✅ Supported | Latest stable |
 
 ### 🔧 Environment Setup
+
+#### On Windows
 ```bash
 python -m venv .venv
-source .venv/bin/activate
+.venv\Scripts\activate
 pip install -r base64server/requirements.txt
 cd base64server
 python app.py
+```
+
+#### On macOS/Linux
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r base64server/requirements.txt
+cd base64server
+python3 app.py
+```
+
+#### Check Python Version
+```bash
+python --version
+# or
+python3 --version
+```
+
+#### Install Python 3 (if needed)
+
+**Windows:**
+- Download from [python.org](https://www.python.org/downloads/)
+- Run installer and check "Add Python to PATH"
+
+**macOS:**
+```bash
+# Using Homebrew
+brew install python3
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install python3 python3-pip python3-venv
+```
+
+**Linux (CentOS/RHEL):**
+```bash
+sudo yum install python3 python3-pip
 ```
 
 ### 🚀 Production Deployment
