@@ -1,9 +1,12 @@
 import base64
 import binascii
 import io
+import os
+import threading
+import time
 import uuid
 
-from flask import Flask, jsonify, request, send_file, render_template
+from flask import Flask, jsonify, request, send_file, send_from_directory, render_template
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -11,6 +14,32 @@ app = Flask(__name__)
 
 MAX_CONTENT_LENGTH = 20 * 1024 * 1024  # 20 MB
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
+
+FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "files")
+os.makedirs(FILES_DIR, exist_ok=True)
+
+FILE_TTL_SECONDS = 24 * 60 * 60  # 24 hours
+CLEANUP_INTERVAL_SECONDS = 10 * 60  # 10 minutes
+
+
+def cleanup_expired_files():
+    while True:
+        now = time.time()
+        try:
+            for name in os.listdir(FILES_DIR):
+                path = os.path.join(FILES_DIR, name)
+                try:
+                    if os.path.isfile(path) and now - os.path.getmtime(path) > FILE_TTL_SECONDS:
+                        os.remove(path)
+                except OSError:
+                    pass
+        except OSError:
+            pass
+        time.sleep(CLEANUP_INTERVAL_SECONDS)
+
+
+if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+    threading.Thread(target=cleanup_expired_files, daemon=True).start()
 
 limiter = Limiter(
     app=app,
@@ -52,9 +81,13 @@ def index():
 def decode():
     payload = request.get_json(silent=True) or {}
     b64_data = payload.get("data") or request.form.get("data")
+    mode = (payload.get("mode") or request.form.get("mode") or "binary").lower()
 
     if not b64_data:
         return jsonify({"error": "No base64 data provided"}), 400
+
+    if mode not in ("binary", "url"):
+        return jsonify({"error": "Invalid mode. Use 'binary' or 'url'"}), 400
 
     b64_data = strip_data_url_prefix(b64_data)
 
@@ -68,12 +101,30 @@ def decode():
         return jsonify({"error": "Decoded data is not a recognized image format"}), 400
 
     filename = f"{uuid.uuid4().hex}.{extension}"
+
+    if mode == "url":
+        file_path = os.path.join(FILES_DIR, filename)
+        with open(file_path, "wb") as f:
+            f.write(image_bytes)
+        return jsonify({
+            "url": request.host_url.rstrip("/") + f"/api/v1/files/{filename}",
+            "mime_type": mime_type,
+            "filename": filename,
+        })
+
     return send_file(
         io.BytesIO(image_bytes),
         mimetype=mime_type,
         as_attachment=True,
         download_name=filename,
     )
+
+
+@app.route("/api/v1/files/<path:filename>", methods=["GET"])
+def get_file(filename):
+    if not os.path.isfile(os.path.join(FILES_DIR, filename)):
+        return jsonify({"error": "File not found"}), 404
+    return send_from_directory(FILES_DIR, filename)
 
 
 @app.route("/api/v1/encode", methods=["POST"])
@@ -108,6 +159,15 @@ def too_large(_error):
 @app.errorhandler(429)
 def ratelimit_handler(e):
     return jsonify({"error": "Rate limit exceeded. Max 30 requests per minute."}), 429
+
+
+@app.after_request
+def set_security_headers(response):
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:"
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
 
 
 if __name__ == "__main__":
