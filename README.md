@@ -75,6 +75,47 @@ python app.py
 
 ---
 
+## 🤖 Use Case: AI Image Generation Workflows
+
+Many image-generation APIs — including **OpenRouter** and most other LLM/diffusion providers — return generated images as **raw base64 strings** rather than hosted URLs. That's inconvenient when you need to:
+
+- Display the image in a web/mobile app that expects an `<img src="...">` URL
+- Share a link to the generated image instead of passing megabytes of base64 around
+- Store the image temporarily without standing up your own object storage (S3, GCS, etc.)
+- Let downstream services (webhooks, chat UIs, previews) fetch the image over plain HTTP
+
+This server exists to bridge that gap. Point your AI pipeline's base64 output at `/api/v1/decode` with `"mode": "url"`, and get back a shareable link — no cloud storage setup required for quick integrations, demos, or internal tools.
+
+**Typical flow:**
+
+```python
+import requests
+
+# 1. Generate an image via OpenRouter (or any image-gen API)
+gen_response = requests.post(
+    "https://openrouter.ai/api/v1/images/generations",
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+    json={"model": "...", "prompt": "a red panda coding at a desk"}
+)
+base64_image = gen_response.json()["data"][0]["b64_json"]
+
+# 2. Convert it to a URL using this server
+url_response = requests.post(
+    "http://localhost:5000/api/v1/decode",
+    json={"data": base64_image, "mode": "url"}
+)
+image_url = url_response.json()["url"]
+
+# 3. Use image_url anywhere: chat responses, <img> tags, webhooks, etc.
+print(image_url)
+```
+
+This works with output from **any** provider that returns base64-encoded images — OpenRouter, Stability AI, Replicate, self-hosted Stable Diffusion/ComfyUI endpoints, or your own model server. As long as it's base64, this API turns it into a URL.
+
+> ⚠️ Files are stored temporarily (auto-deleted after 24 hours — see [Auto-Cleanup](#-features)). For permanent hosting, pair this with real object storage in production.
+
+---
+
 ## 📚 Documentation
 
 For complete setup, deployment, API documentation, and code examples, see:
