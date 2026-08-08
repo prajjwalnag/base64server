@@ -2,6 +2,17 @@
 
 A production-ready Base64 image conversion service built with Flask. Convert between base64 strings and image files via a modern web UI or REST API.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![GitHub stars](https://img.shields.io/github/stars/prajjwalnag/base64server?style=social)](https://github.com/prajjwalnag/base64server/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/prajjwalnag/base64server?style=social)](https://github.com/prajjwalnag/base64server/fork)
+
+> 💡 **Like this project?** Give it a ⭐ star, [fork it](https://github.com/prajjwalnag/base64server/fork), and make it your own. Contributions of any size are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+![Base64 Server Screenshot](.github/screenshot.png)
+
 ---
 
 ## 📁 Project Structure
@@ -14,7 +25,13 @@ base64/
 │   ├── requirements.txt       # Python dependencies
 │   ├── .gitignore             # Git ignore rules
 │   └── README.md              # Full setup & API documentation
-└── README.md                  # This file
+├── .github/
+│   ├── ISSUE_TEMPLATE/         # Bug report & feature request templates
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── screenshot.png          # App screenshot used in this README
+├── LICENSE                     # MIT License
+├── CONTRIBUTING.md             # How to contribute
+└── README.md                   # This file
 ```
 
 ---
@@ -225,7 +242,7 @@ gunicorn app:app --bind 0.0.0.0:5000
 
 ## 📄 License
 
-MIT License — Free to use for personal and commercial projects. ✅
+[MIT License](LICENSE) — free to use, modify, and distribute for personal and commercial projects. ✅
 
 ---
 
@@ -245,18 +262,34 @@ Built by **Prajjwal Nag**
 
 ## 🤝 Contributing
 
-Found a bug? Have an idea? 
+This project is intentionally small and easy to get into — a great first open-source contribution.
+
 - 🐛 **Report Issues**: [GitHub Issues](https://github.com/prajjwalnag/base64server/issues)
-- 💡 **Pull Requests**: All contributions welcome!
+- 💡 **Suggest Features**: Open an issue with your idea
+- 🔧 **Submit a PR**: See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, guidelines, and PR checklist
+
+**Good first contributions:**
+- Add support for another image format (e.g. SVG, AVIF)
+- Add a CLI tool for encode/decode without the web UI
+- Write automated tests
+- Improve error messages or accessibility
 
 ---
+
+## 🍴 Why Fork This?
+
+- **Small, readable codebase** — one `app.py`, one `index.html`, no framework sprawl
+- **Real security practices** — CSP headers, magic-byte validation, rate limiting — good reference for your own projects
+- **Ready to extend** — add auth, S3 storage, new formats, or a CLI without fighting existing abstractions
+- **MIT licensed** — use it commercially, rebrand it, ship it
 
 ## ⭐ Show Your Support
 
 If this project helped you, please consider:
-- ⭐ **Star** this repository
-- 📢 **Share** with others
-- 💬 **Give feedback** on GitHub
+- ⭐ **[Star this repo](https://github.com/prajjwalnag/base64server)**
+- 🍴 **[Fork it](https://github.com/prajjwalnag/base64server/fork)** and build on it
+- 📢 **Share** with others who might find it useful
+- 💬 **Give feedback** via [issues](https://github.com/prajjwalnag/base64server/issues)
 
 ---
 
