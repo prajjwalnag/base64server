@@ -600,7 +600,11 @@
 
       decodeBtn.disabled = true;
       const originalText = decodeBtn.textContent;
-      decodeBtn.innerHTML = '<span class="loader"></span> Decoding...';
+      const loaderSpan = document.createElement('span');
+      loaderSpan.className = 'loader';
+      decodeBtn.textContent = '';
+      decodeBtn.appendChild(loaderSpan);
+      decodeBtn.appendChild(document.createTextNode(' Decoding...'));
 
       try {
         const res = await fetch('/api/v1/decode', {
@@ -688,13 +692,29 @@
     function setSelectedFile(file) {
       selectedFile = file;
       const sizeKB = (file.size / 1024).toFixed(1);
-      dropzone.innerHTML = `
-        <div class="dropzone-content">
-          <div class="dropzone-icon">✓</div>
-          <div class="dropzone-text">${file.name}</div>
-          <div class="dropzone-subtext">${sizeKB} KB</div>
-        </div>
-      `;
+
+      const content = document.createElement('div');
+      content.className = 'dropzone-content';
+
+      const icon = document.createElement('div');
+      icon.className = 'dropzone-icon';
+      icon.textContent = '✓';
+
+      const text = document.createElement('div');
+      text.className = 'dropzone-text';
+      text.textContent = file.name;
+
+      const subtext = document.createElement('div');
+      subtext.className = 'dropzone-subtext';
+      subtext.textContent = sizeKB + ' KB';
+
+      content.appendChild(icon);
+      content.appendChild(text);
+      content.appendChild(subtext);
+
+      dropzone.innerHTML = '';
+      dropzone.appendChild(content);
+
       encodeBtn.disabled = false;
       encodeError.textContent = '';
       encodeResult.innerHTML = '';
@@ -710,7 +730,11 @@
 
       encodeBtn.disabled = true;
       const originalText = encodeBtn.textContent;
-      encodeBtn.innerHTML = '<span class="loader"></span> Encoding...';
+      const loaderSpan = document.createElement('span');
+      loaderSpan.className = 'loader';
+      encodeBtn.textContent = '';
+      encodeBtn.appendChild(loaderSpan);
+      encodeBtn.appendChild(document.createTextNode(' Encoding...'));
 
       try {
         const res = await fetch('/api/v1/encode', { method: 'POST', body: formData });
