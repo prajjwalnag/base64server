@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Base64 Image Converter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --secondary: #ec4899;
+      --tertiary: #06b6d4;
+      --accent: #f59e0b;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --gray: #64748b;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1a1a3a 25%, #2a1a4a 50%, #1a2a3a 75%, #0f172a 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      color: #0f172a;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="8" fill="%236366f1" opacity="0.6"/><circle cx="10" cy="10" r="5" fill="%236366f1"/></svg>') 10 10, auto;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 10% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 90% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 2px,
+          rgba(255, 255, 255, 0.03) 2px,
+          rgba(255, 255, 255, 0.03) 4px
+        );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .decorative-orb {
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.15;
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      top: -100px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(135deg, #06b6d4, #6366f1);
+      top: 50%;
+      right: -50px;
+      animation-delay: 5s;
+    }
+
+    .orb-3 {
+      width: 350px;
+      height: 350px;
+      background: linear-gradient(135deg, #ec4899, #06b6d4);
+      bottom: -100px;
+      left: 50%;
+      animation-delay: 10s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      33% { transform: translate(30px, -30px); }
+      66% { transform: translate(-20px, 20px); }
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      z-index: 2;
+    }
+
+    h1 {
+      font-size: 4.2rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+      margin-top: 12px;
+    }
+
+    .tabs-container {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.1s backwards;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 14px;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: 'Sora', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      opacity: 0;
+      z-index: -1;
+      transition: opacity 0.35s ease;
+    }
+
+    .tab-btn:hover {
+      color: #f1f5f9;
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.35);
+    }
+
+    .tab-btn.active::before {
+      opacity: 1;
+    }
+
+    .card {
+      background: rgba(248, 250, 252, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+      animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s backwards;
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+      animation: shimmer 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(20px, 20px); }
+    }
+
+    .card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      font-family: 'Courier Prime', monospace;
+      padding: 18px;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      background: linear-gradient(#f8fafc, #f8fafc) padding-box,
+                  linear-gradient(135deg, #6366f1, #ec4899) border-box;
+      font-size: 0.9rem;
+      resize: vertical;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #0f172a;
+    }
+
+    textarea:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+      transform: translateY(-4px);
+    }
+
+    textarea::placeholder {
+      color: #cbd5e1;
+    }
+
+    .dropzone {
+      border: 2px solid #06b6d4;
+      border-radius: 18px;
+      padding: 60px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
+      position: relative;
+      overflow: hidden;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .dropzone::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(6, 182, 212, 0.1) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .dropzone:hover::before {
+      transform: translateX(100%);
+    }
+
+    .dropzone:hover {
+      border-color: #6366f1;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.12));
+      transform: translateY(-4px);
+      box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+    }
+
+    .dropzone.dragover {
+      border-color: #ec4899;
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(6, 182, 212, 0.12));
+      transform: scale(1.02);
+    }
+
+    .dropzone input {
+      display: none;
+    }
+
+    .dropzone-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dropzone-icon {
+      font-size: 3.5rem;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .dropzone-text {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+
+    .dropzone-subtext {
+      font-size: 0.95rem;
+      color: #64748b;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    button.primary {
+      flex: 1;
+      min-width: 200px;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.3);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.95rem;
+    }
+
+    button.primary::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+      z-index: 1;
+    }
+
+    button.primary:hover:not(:disabled)::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    button.primary:hover:not(:disabled) {
+      transform: translateY(-6px);
+      box-shadow: 0 18px 45px rgba(99, 102, 241, 0.4);
+    }
+
+    button.primary:active:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    button.primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.secondary {
+      padding: 11px 20px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #0f172a;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: 'Sora', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button.secondary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    button.secondary:hover {
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      color: #fff;
+      border-color: transparent;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+    }
+
+    button.secondary:hover::before {
+      left: 100%;
+    }
+
+    .error-message {
+      color: #dc2626;
+      margin-top: 18px;
+      padding: 14px 18px;
+      background: rgba(220, 38, 38, 0.12);
+      border-radius: 10px;
+      border-left: 4px solid #dc2626;
+      font-size: 0.95rem;
+      min-height: 1.5em;
+      animation: slideInDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: 500;
+    }
+
+    .result-section {
+      margin-top: 32px;
+      animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .result-image {
+      max-width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 25px 60px rgba(99, 102, 241, 0.25);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .result-image:hover {
+      transform: scale(1.03) rotateY(2deg);
+      box-shadow: 0 35px 80px rgba(99, 102, 241, 0.35);
+    }
+
+    .result-actions {
+      margin-top: 22px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .result-actions a {
+      text-decoration: none;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .output-section {
+      margin-top: 24px;
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .output-label {
+      font-weight: 700;
+      color: #0f172a;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .file-info {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+
+    .file-stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 2px;
+    }
+
+    .output-textarea {
+      width: 100%;
+      height: 140px;
+      font-family: 'Courier Prime', monospace;
+      padding: 14px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: linear-gradient(#f8fafc, #f8fafc) padding-box,
+                  linear-gradient(135deg, #6366f1, #ec4899) border-box;
+      font-size: 0.85rem;
+      resize: vertical;
+      color: #0f172a;
+      word-break: break-all;
+      pointer-events: none;
+      user-select: text;
+      transition: all 0.3s ease;
+    }
+
+    .output-textarea:hover {
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .copy-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .mime-info {
+      font-size: 0.85rem;
+      color: #6366f1;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.08));
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-family: 'Courier Prime', monospace;
+      font-weight: 600;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .success-message {
+      color: #10b981;
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      background: rgba(16, 185, 129, 0.15);
+      border-radius: 6px;
+      animation: slideInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: 600;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(99, 102, 241, 0.3);
+      border-radius: 50%;
+      border-top-color: #6366f1;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      margin-top: 60px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer-text {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+    }
+
+    .footer-text a {
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .footer-text a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      transition: width 0.3s ease;
+    }
+
+    .footer-text a:hover {
+      color: #ec4899;
+    }
+
+    .footer-text a:hover::after {
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.8rem;
+      }
+      .card {
+        padding: 32px 20px;
+      }
+      .dropzone {
+        padding: 40px 20px;
+        min-height: 180px;
+      }
+      button.primary {
+        min-width: 100%;
+      }
+      .result-actions a {
+        min-width: 100%;
+      }
+      footer {
+        margin-top: 40px;
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="decorative-orb orb-1"></div>
+  <div class="decorative-orb orb-2"></div>
+  <div class="decorative-orb orb-3"></div>
+
+  <div class="container">
+    <header>
+      <h1>Base64</h1>
+      <p class="tagline">Transform images and base64 with precision</p>
+    </header>
+
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="decode">📸 Decode to Image</button>
+      <button class="tab-btn" data-tab="encode">🔤 Encode to Base64</button>
+    </div>
+
+    <div class="panels-wrapper">
+      <!-- Decode Panel -->
+      <section id="decode" class="panel active">
+        <div class="card">
+          <textarea id="b64input" placeholder="Paste your base64 string here... (supports data:image prefix)"></textarea>
+          <div class="button-group">
+            <button class="primary" id="decodeBtn">✨ Decode Image</button>
+          </div>
+          <div class="error-message" id="decodeError"></div>
+          <div class="result-section" id="decodeResult"></div>
+        </div>
+      </section>
+
+      <!-- Encode Panel -->
+      <section id="encode" class="panel">
+        <div class="card">
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-content">
+              <div class="dropzone-icon">📤</div>
+              <div class="dropzone-text">Drop your image here</div>
+              <div class="dropzone-subtext">or click to browse files</div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*">
+          </div>
+          <div class="button-group">
+            <button class="primary" id="encodeBtn" disabled>✨ Encode to Base64</button>
+          </div>
+          <div class="error-message" id="encodeError"></div>
+          <div class="result-section" id="encodeResult"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Decode section
+    const decodeBtn = document.getElementById('decodeBtn');
+    const b64input = document.getElementById('b64input');
+    const decodeResult = document.getElementById('decodeResult');
+    const decodeError = document.getElementById('decodeError');
+
+    decodeBtn.addEventListener('click', async () => {
+      decodeError.textContent = '';
+      decodeResult.innerHTML = '';
+      const data = b64input.value.trim();
+      if (!data) {
+        decodeError.textContent = '⚠️ Please paste some base64 data first.';
+        return;
+      }
+
+      decodeBtn.disabled = true;
+      const originalText = decodeBtn.textContent;
+      decodeBtn.innerHTML = '<span class="loader"></span> Decoding...';
+
+      try {
+        const res = await fetch('/api/v1/decode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data })
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          if (res.status === 429) {
+            decodeError.textContent = '🚫 Rate limit exceeded. Please wait a moment.';
+          } else {
+            decodeError.textContent = '❌ ' + (body.error || 'Failed to decode image.');
+          }
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename=([^;]+)/);
+        const filename = match ? match[1].trim() : 'image';
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'result-image';
+        const actions = document.createElement('div');
+        actions.className = 'result-actions';
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = filename;
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'secondary';
+        downloadBtn.textContent = '⬇️ Download';
+        downloadLink.appendChild(downloadBtn);
+
+        const copyUrlBtn = document.createElement('button');
+        copyUrlBtn.className = 'secondary';
+        copyUrlBtn.textContent = '📋 Copy URL';
+        copyUrlBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(url);
+          const msg = document.createElement('div');
+          msg.className = 'success-message';
+          msg.textContent = '✓ Copied!';
+          copyUrlBtn.parentElement.appendChild(msg);
+          setTimeout(() => msg.remove(), 2000);
+        });
+
+        actions.appendChild(downloadLink);
+        actions.appendChild(copyUrlBtn);
+        decodeResult.appendChild(img);
+        decodeResult.appendChild(actions);
+      } finally {
+        decodeBtn.disabled = false;
+        decodeBtn.textContent = originalText;
+      }
+    });
+
+    // Encode section
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const encodeBtn = document.getElementById('encodeBtn');
+    const encodeResult = document.getElementById('encodeResult');
+    const encodeError = document.getElementById('encodeError');
+    let selectedFile = null;
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) setSelectedFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) setSelectedFile(fileInput.files[0]);
+    });
+
+    function setSelectedFile(file) {
+      selectedFile = file;
+      const sizeKB = (file.size / 1024).toFixed(1);
+      dropzone.innerHTML = `
+        <div class="dropzone-content">
+          <div class="dropzone-icon">✓</div>
+          <div class="dropzone-text">${file.name}</div>
+          <div class="dropzone-subtext">${sizeKB} KB</div>
+        </div>
+      `;
+      encodeBtn.disabled = false;
+      encodeError.textContent = '';
+      encodeResult.innerHTML = '';
+    }
+
+    encodeBtn.addEventListener('click', async () => {
+      encodeError.textContent = '';
+      encodeResult.innerHTML = '';
+      if (!selectedFile) return;
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      encodeBtn.disabled = true;
+      const originalText = encodeBtn.textContent;
+      encodeBtn.innerHTML = '<span class="loader"></span> Encoding...';
+
+      try {
+        const res = await fetch('/api/v1/encode', { method: 'POST', body: formData });
+        const body = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          if (res.status === 429) {
+            encodeError.textContent = '🚫 Rate limit exceeded. Please wait a moment.';
+          } else {
+            encodeError.textContent = '❌ ' + (body.error || 'Failed to encode image.');
+          }
+          return;
+        }
+
+        const sizeKB = (selectedFile.size / 1024).toFixed(1);
+        const b64Size = (body.base64.length / 1024).toFixed(1);
+
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'output-section';
+
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'file-info';
+        fileInfo.innerHTML = `
+          <div class="file-stat">
+            <div class="stat-value">${sizeKB}</div>
+            <div class="stat-label">Original KB</div>
+          </div>
+          <div class="file-stat">
+            <div class="stat-value">${b64Size}</div>
+            <div class="stat-label">Base64 KB</div>
+          </div>
+          <div class="file-stat">
+            <div class="stat-value">${(b64Size / sizeKB * 100).toFixed(0)}%</div>
+            <div class="stat-label">Size Increase</div>
+          </div>
+        `;
+        resultDiv.appendChild(fileInfo);
+
+        const textarea = document.createElement('textarea');
+        textarea.className = 'output-textarea';
+        textarea.readOnly = true;
+        textarea.value = body.base64;
+        resultDiv.appendChild(textarea);
+
+        const copyActions = document.createElement('div');
+        copyActions.className = 'copy-actions';
+
+        const copyBase64Btn = document.createElement('button');
+        copyBase64Btn.className = 'secondary';
+        copyBase64Btn.textContent = '📋 Copy Base64';
+        copyBase64Btn.addEventListener('click', () => {
+          navigator.clipboard.writeText(body.base64);
+          const msg = document.createElement('div');
+          msg.className = 'success-message';
+          msg.textContent = '✓ Copied to clipboard!';
+          copyActions.appendChild(msg);
+          setTimeout(() => msg.remove(), 2000);
+        });
+
+        const copyDataUrlBtn = document.createElement('button');
+        copyDataUrlBtn.className = 'secondary';
+        copyDataUrlBtn.textContent = '🔗 Copy Data URL';
+        copyDataUrlBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(body.data_url);
+          const msg = document.createElement('div');
+          msg.className = 'success-message';
+          msg.textContent = '✓ Copied to clipboard!';
+          copyActions.appendChild(msg);
+          setTimeout(() => msg.remove(), 2000);
+        });
+
+        const mimeSpan = document.createElement('div');
+        mimeSpan.className = 'mime-info';
+        mimeSpan.textContent = `📝 ${body.mime_type}`;
+
+        copyActions.appendChild(copyBase64Btn);
+        copyActions.appendChild(copyDataUrlBtn);
+        copyActions.appendChild(mimeSpan);
+        resultDiv.appendChild(copyActions);
+        encodeResult.appendChild(resultDiv);
+      } finally {
+        encodeBtn.disabled = false;
+        encodeBtn.textContent = originalText;
+      }
+    });
+  </script>
+
+  <footer>
+    <div class="footer-text">
+      <div style="margin-bottom: 8px;">Created by <a href="https://mwragency.com" target="_blank">MWR Agency</a></div>
+      <div style="font-size: 0.85rem; color: #64748b;">Led by Claude Ford at <a href="https://rigmi.com" target="_blank">Rigmi</a></div>
+    </div>
+  </footer>
+</body>
+</html>
