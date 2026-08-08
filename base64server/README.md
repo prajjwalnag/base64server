@@ -1,123 +1,99 @@
 # Base64 Image Converter
 
-A modern, high-performance Flask web application for converting between base64 strings and image files. Features a stunning, production-grade UI with advanced animations and a robust API with rate limiting.
+A fast, secure, and professional-grade Flask web application for converting between base64 strings and image files. Built with a dark-mode UI, comprehensive API, and production-ready security features.
 
-## Features
-
-### 🎨 UI
-- **Dual-mode interface**: Decode base64 to images and encode images to base64
-- **Visually stunning design** with animated gradients, glassmorphism effects, and smooth micro-interactions
-- **Responsive layout** works seamlessly on desktop, tablet, and mobile
-- **Real-time file stats**: View original size, base64 size, and size increase percentage
-- **Loading states** with elegant animations
-- **Copy to clipboard** functionality with success feedback
-- **Drag-and-drop** support for image uploads
-
-### 🔒 Rate Limiting
-- **30 requests per minute** per IP address for each endpoint
-- **200 requests per day** global limit per IP
-- **50 requests per hour** global limit per IP
-- Graceful rate limit error messages
-
-### 🛠️ API
-- **RESTful endpoints** for programmatic access
-- **JSON responses** with detailed error handling
-- **File size limit**: 20 MB max
-- **Supported formats**: PNG, JPEG, GIF, WEBP, BMP
-
-## Installation
+## Quick Start
 
 ### Prerequisites
-- Python 3.8+
-- pip
+- Python 3.8 or higher
+- pip (Python package manager)
 
-### Setup
+### Installation & Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/prajjwalnag/base64server.git
 cd base64server
 
 # Create virtual environment
 python -m venv .venv
 
 # Activate virtual environment
-# On Windows:
+# Windows:
 .venv\Scripts\activate
-# On macOS/Linux:
+# macOS/Linux:
 source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-## Running the Server
+### Run the Server
 
+**Development:**
 ```bash
 python app.py
 ```
+The app will start at `http://localhost:5000`
 
-The server will start on `http://localhost:5000` by default.
-
-For production, use a production-grade server like Gunicorn:
+**Production:**
 ```bash
 pip install gunicorn
 gunicorn app:app --bind 0.0.0.0:5000
 ```
 
+For production on a different port:
+```bash
+gunicorn app:app --bind 0.0.0.0:8000
+```
+
+---
+
+## Features
+
+### Web Interface
+- **Decode Base64 → Image**: Paste base64 strings and download as image files
+- **Encode Image → Base64**: Upload images and get base64 output
+- **Dark Theme UI**: Modern, professional design with responsive layout
+- **Real-time Stats**: See file sizes and conversion metrics
+- **Copy to Clipboard**: One-click copying of base64 strings and URLs
+- **Drag-and-Drop**: Upload images by dragging them into the drop zone
+
+### API
+- **RESTful Endpoints**: Full programmatic access
+- **Multiple Formats**: Supports PNG, JPEG, GIF, WEBP, BMP
+- **Two Decode Modes**: 
+  - Binary: Download image directly
+  - URL: Save to server and get shareable link
+- **Rate Limiting**: Built-in protection against abuse
+- **Security Headers**: CSP, XSS protection, clickjacking prevention
+- **Auto File Cleanup**: Files older than 24 hours automatically deleted
+
+### Backend
+- **Fast Image Detection**: Magic byte verification (not by extension)
+- **20 MB File Limit**: Prevents resource exhaustion
+- **Rate Limiting**: 30 requests/minute per IP, 50/hour globally, 200/day globally
+- **Thread-Safe**: Automatic cleanup thread manages file retention
+
+---
+
 ## API Documentation
 
-### Endpoints
-
-#### 1. Decode Base64 → Image
-**POST** `/api/v1/decode`
-
-Convert a base64 string to an image file.
-
-**Request:**
-```json
-{
-  "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-}
+### Base URL
+```
+http://localhost:5000/api/v1
 ```
 
-Supports optional `data:image/...;base64,` prefix:
-```json
-{
-  "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-}
-```
+---
 
-By default the decoded image is returned as a binary file. Pass `"mode": "url"` to instead have the server save the file to disk and return a URL to it:
-```json
-{
-  "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-  "mode": "url"
-}
-```
+### 1. Decode Base64 to Image
 
-**Response (`mode: "binary"`, default):**
-- Returns image file as binary with correct MIME type
-- Supported formats: PNG, JPEG, GIF, WEBP, BMP
+**Endpoint:** `POST /api/v1/decode`
 
-**Response (`mode: "url"`):**
-```json
-{
-  "url": "http://localhost:5000/api/v1/files/56a6f648ac7245f9ab042f68e04c34c5.png",
-  "mime_type": "image/png",
-  "filename": "56a6f648ac7245f9ab042f68e04c34c5.png"
-}
-```
+**Default Mode (Binary Download):**
 
-The file is saved under `base64server/files/`. A background thread inside the app automatically deletes files older than 24 hours, sweeping every 10 minutes — no external cron job needed.
+Send base64 data and receive image file directly.
 
-**Error Responses:**
-```json
-{"error": "No base64 data provided"}                          // 400
-{"error": "Invalid base64 data"}                              // 400
-{"error": "Decoded data is not a recognized image format"}    // 400
-{"error": "Rate limit exceeded. Max 30 requests per minute."} // 429
-```
-
-**cURL Example:**
 ```bash
 curl -X POST http://localhost:5000/api/v1/decode \
   -H "Content-Type: application/json" \
@@ -125,17 +101,60 @@ curl -X POST http://localhost:5000/api/v1/decode \
   -o image.png
 ```
 
+**Request Format:**
+```json
+{
+  "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+}
+```
+
+**URL Mode (Save to Server):**
+
+Send `"mode": "url"` to save the image and get a shareable URL.
+
+```bash
+curl -X POST http://localhost:5000/api/v1/decode \
+  -H "Content-Type: application/json" \
+  -d '{"data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "mode": "url"}'
+```
+
+**Response (URL Mode):**
+```json
+{
+  "url": "http://localhost:5000/api/v1/files/abc123def456.png",
+  "mime_type": "image/png",
+  "filename": "abc123def456.png"
+}
+```
+
+**Supports Data URLs:**
+You can also send data URLs with the prefix:
+```json
+{
+  "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+}
+```
+
+**Error Responses:**
+```json
+{"error": "No base64 data provided"}                    // 400
+{"error": "Invalid base64 data"}                        // 400
+{"error": "Decoded data is not a recognized image"}    // 400
+{"error": "Rate limit exceeded. Max 30 requests/min."} // 429
+```
+
 ---
 
-#### 2. Encode Image → Base64
-**POST** `/api/v1/encode`
+### 2. Encode Image to Base64
 
-Convert an image file to a base64 string.
+**Endpoint:** `POST /api/v1/encode`
 
-**Request (multipart form-data):**
+Upload an image file and receive base64 encoding.
+
+**cURL Example:**
 ```bash
 curl -X POST http://localhost:5000/api/v1/encode \
-  -F "file=@path/to/image.png"
+  -F "file=@/path/to/image.png"
 ```
 
 **Response:**
@@ -149,64 +168,24 @@ curl -X POST http://localhost:5000/api/v1/encode \
 
 **Error Responses:**
 ```json
-{"error": "No file provided"}                                 // 400
-{"error": "Uploaded file is not a recognized image format"}   // 400
-{"error": "File too large"}                                   // 413
-{"error": "Rate limit exceeded. Max 30 requests per minute."} // 429
-```
-
-**Python Example:**
-```python
-import requests
-
-# Encode image to base64
-with open('image.png', 'rb') as f:
-    files = {'file': f}
-    response = requests.post('http://localhost:5000/api/v1/encode', files=files)
-    data = response.json()
-    print(data['base64'])
-    print(data['data_url'])
-
-# Decode base64 to image
-response = requests.post('http://localhost:5000/api/v1/decode',
-    json={'data': data['base64']})
-with open('decoded.png', 'wb') as f:
-    f.write(response.content)
-```
-
-**JavaScript/Fetch Example:**
-```javascript
-// Encode
-const formData = new FormData();
-formData.append('file', imageFile);
-
-const response = await fetch('http://localhost:5000/api/v1/encode', {
-  method: 'POST',
-  body: formData
-});
-
-const data = await response.json();
-console.log(data.base64);      // base64 string
-console.log(data.data_url);    // data URL
-console.log(data.mime_type);   // image/png
-
-// Decode
-const decodeResponse = await fetch('http://localhost:5000/api/v1/decode', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ data: data.base64 })
-});
-
-const imageBlob = await decodeResponse.blob();
-const imageUrl = URL.createObjectURL(imageBlob);
+{"error": "No file provided"}                    // 400
+{"error": "Uploaded file is not a recognized image"} // 400
+{"error": "File too large"}                     // 413
+{"error": "Rate limit exceeded"}                // 429
 ```
 
 ---
 
-#### 3. Fetch a Saved File
-**GET** `/api/v1/files/<filename>`
+### 3. Retrieve Saved File
 
-Downloads a file previously saved via `/api/v1/decode` with `"mode": "url"`.
+**Endpoint:** `GET /api/v1/files/<filename>`
+
+Download a file previously saved with `mode: "url"`.
+
+**Example:**
+```bash
+curl http://localhost:5000/api/v1/files/abc123def456.png -o image.png
+```
 
 **Error Responses:**
 ```json
@@ -215,197 +194,153 @@ Downloads a file previously saved via `/api/v1/decode` with `"mode": "url"`.
 
 ---
 
-### Legacy Endpoint
-`/api/decode` is an alias for `/api/v1/decode` for backwards compatibility.
+## Code Examples
 
----
+### Python
 
-## Rate Limiting
+```python
+import requests
 
-The API implements strict rate limiting to prevent abuse:
+# Upload image → Base64
+with open('photo.png', 'rb') as f:
+    response = requests.post(
+        'http://localhost:5000/api/v1/encode',
+        files={'file': f}
+    )
+    data = response.json()
+    print("Base64:", data['base64'])
+    print("Data URL:", data['data_url'])
 
-| Limit | Value |
-|-------|-------|
-| Per minute (per endpoint) | 30 requests |
-| Per hour (global) | 50 requests |
-| Per day (global) | 200 requests |
+# Base64 → Download Image
+base64_str = data['base64']
+response = requests.post(
+    'http://localhost:5000/api/v1/decode',
+    json={'data': base64_str}
+)
+with open('decoded.png', 'wb') as f:
+    f.write(response.content)
 
-**Rate Limit Response:**
+# Base64 → Save on Server (URL Mode)
+response = requests.post(
+    'http://localhost:5000/api/v1/decode',
+    json={'data': base64_str, 'mode': 'url'}
+)
+data = response.json()
+print("File URL:", data['url'])
 ```
-HTTP 429 Too Many Requests
-{
-  "error": "Rate limit exceeded. Max 30 requests per minute."
+
+### JavaScript
+
+```javascript
+// Upload image → Base64
+const fileInput = document.querySelector('input[type="file"]');
+const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+
+const response = await fetch('http://localhost:5000/api/v1/encode', {
+  method: 'POST',
+  body: formData
+});
+
+const data = await response.json();
+console.log('Base64:', data.base64);
+console.log('MIME:', data.mime_type);
+
+// Base64 → Image URL
+const decodeResponse = await fetch('http://localhost:5000/api/v1/decode', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ data: data.base64 })
+});
+
+const blob = await decodeResponse.blob();
+const imageUrl = URL.createObjectURL(blob);
+document.querySelector('img').src = imageUrl;
+```
+
+### Node.js / TypeScript
+
+```typescript
+import axios from 'axios';
+import fs from 'fs';
+
+const API = 'http://localhost:5000/api/v1';
+
+// Encode
+async function encodeImage(filePath: string) {
+  const file = fs.readFileSync(filePath);
+  const formData = new FormData();
+  formData.append('file', new Blob([file]));
+
+  const response = await axios.post(`${API}/encode`, formData);
+  return response.data;
+}
+
+// Decode
+async function decodeImage(base64: string) {
+  const response = await axios.post(`${API}/decode`, { data: base64 }, {
+    responseType: 'arraybuffer'
+  });
+  return response.data;
 }
 ```
-
-The UI automatically handles rate limit errors and displays user-friendly messages.
 
 ---
 
 ## Configuration
 
 ### Environment Variables
-None required for basic setup. For production:
+
+Set these for production deployments:
 
 ```bash
 export FLASK_ENV=production
 export FLASK_DEBUG=0
 ```
 
-### Modifying Rate Limits
+### Adjust Rate Limits
 
-Edit `app.py` to adjust limits:
+Edit `app.py` to customize rate limiting:
 
 ```python
-# Change per-endpoint limit
+# Per-endpoint limit (line ~80)
 @app.route("/api/v1/decode", methods=["POST"])
-@limiter.limit("50 per minute")  # Change this value
+@limiter.limit("50 per minute")  # Change to higher/lower as needed
 def decode():
     ...
 
-# Change global limits
+# Global limits (line ~44)
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["300 per day", "100 per hour"],  # Edit these
+    default_limits=["300 per day", "100 per hour"],  # Adjust defaults
 )
 ```
 
----
+### Enable CORS (For Cross-Domain Requests)
 
-## File Structure
-
-```
-base64server/
-├── app.py                 # Flask application with API endpoints
-├── requirements.txt       # Python dependencies
-├── templates/
-│   └── index.html        # Frontend UI (HTML/CSS/JS)
-├── files/                 # Decoded images saved when mode="url" (gitignored, auto-cleaned after 24h)
-└── README.md             # This file
-```
-
----
-
-## Dependencies
-
-- **Flask 3.0.3**: Web framework
-- **Flask-Limiter 3.5.0**: Rate limiting
-
-Install all dependencies with:
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Design & UX
-
-### Frontend Highlights
-- **Custom Typography**: Sora (modern sans-serif) + Courier Prime (monospace code)
-- **Animated Gradients**: Multi-layered animated background with floating orbs
-- **Glassmorphism**: Frosted glass effect with backdrop blur
-- **Micro-interactions**: Smooth transitions, hover effects, physics-based animations
-- **Data Visualization**: File size stats with visual hierarchy
-- **Accessibility**: Semantic HTML, clear error messages, keyboard-friendly
-
-### Performance
-- Minimal dependencies
-- Efficient image format detection via magic bytes
-- In-memory rate limiting (suitable for single-instance deployments)
-- Optimized CSS animations (GPU-accelerated)
-
----
-
-## API Best Practices
-
-### When to Use Each Endpoint
-
-**Decode** (`/api/v1/decode`):
-- Convert stored base64 strings to downloadable images
-- Render base64 data URLs in web/mobile apps
-- Convert clipboard base64 to image files
-
-**Encode** (`/api/v1/encode`):
-- Upload images for storage or transmission as base64
-- Convert user-selected images to data URLs
-- Prepare images for APIs that accept base64
-
-### Error Handling
-
-Always check the HTTP status code:
-
-```javascript
-const response = await fetch('http://localhost:5000/api/v1/encode', {
-  method: 'POST',
-  body: formData
-});
-
-if (!response.ok) {
-  const error = await response.json();
-  console.error(`Error: ${error.error}`);
-  return;
-}
-
-const data = await response.json();
-```
-
-### Handling Rate Limits
-
-Implement exponential backoff for client-side retries:
+If your frontend runs on a different domain, add CORS:
 
 ```python
-import time
-import requests
-
-def request_with_retry(url, method='GET', max_retries=3, **kwargs):
-    for attempt in range(max_retries):
-        response = requests.request(method, url, **kwargs)
-        if response.status_code == 429:
-            wait_time = 2 ** attempt  # 1s, 2s, 4s
-            print(f"Rate limited. Waiting {wait_time}s...")
-            time.sleep(wait_time)
-            continue
-        return response
-    raise Exception("Max retries exceeded")
-```
-
----
-
-## Troubleshooting
-
-### "Address already in use"
-The default port 5000 is already in use. Specify a different port:
-```bash
-python -c "from app import app; app.run(port=5001)"
-```
-
-### Rate limit errors in development
-Adjust limits in `app.py`:
-```python
-@limiter.limit("1000 per minute")  # More lenient for testing
-def decode():
-```
-
-### CORS issues
-If accessing from a different domain, add CORS headers:
-```python
+# Add to app.py
 from flask_cors import CORS
 CORS(app)
 ```
+
+Then install: `pip install flask-cors`
 
 ---
 
 ## Deployment
 
-### Heroku
+### Local/Development
 ```bash
-pip install gunicorn
-echo "web: gunicorn app:app" > Procfile
-git push heroku main
+python app.py
 ```
 
 ### Docker
+
+**Dockerfile:**
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
@@ -415,40 +350,133 @@ COPY . .
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000"]
 ```
 
-### Production Recommendations
-- Use Gunicorn or uWSGI instead of Flask's development server
-- Deploy behind Nginx or Apache
-- Use Redis for distributed rate limiting across multiple instances
-- Enable HTTPS/SSL
-- Set `FLASK_ENV=production`
-- Use environment variables for secrets
+**Build & Run:**
+```bash
+docker build -t base64server .
+docker run -p 5000:5000 base64server
+```
+
+### Nginx Reverse Proxy
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+### Production Checklist
+- [ ] Use Gunicorn or uWSGI (not Flask dev server)
+- [ ] Deploy behind Nginx/Apache reverse proxy
+- [ ] Enable HTTPS/SSL
+- [ ] Set `FLASK_ENV=production`
+- [ ] Use Redis for rate limiting across multiple instances
+- [ ] Monitor disk space (files expire after 24 hours)
+- [ ] Set up log rotation
+- [ ] Use environment variables for configuration
 
 ---
 
-## Credits & Attribution
+## Troubleshooting
 
-### Leadership & Vision
-- **Claude Ford** - Project Lead at [Rigmi](https://rigmi.com)
+### Port 5000 already in use
+```bash
+# Use a different port
+python -c "from app import app; app.run(port=5001)"
 
-### Development
-- **MWR Agency** - Product Design & Implementation
-- **AI-Assisted Development** - Built with Claude Code
+# Or find and kill the process using port 5000
+# On Windows:
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
 
-### Special Thanks
-This project was developed under the leadership and vision of Claude Ford at Rigmi, with design and implementation by MWR Agency, leveraging advanced AI development tools.
+# On macOS/Linux:
+lsof -i :5000
+kill -9 <PID>
+```
+
+### Rate limit errors during testing
+Temporarily increase limits in `app.py`:
+```python
+@limiter.limit("1000 per minute")  # Lenient for testing
+def decode():
+    ...
+```
+
+### Files not being deleted
+The cleanup thread runs every 10 minutes. Check file modification times:
+```bash
+ls -la base64server/files/
+```
+
+### Memory issues with large files
+The app accepts up to 20 MB per file. To adjust:
+```python
+MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB in app.py
+```
+
+---
+
+## Security
+
+- **Content Security Policy**: Restricts script execution and resource loading
+- **Magic Byte Validation**: Verifies images by content, not extension
+- **Rate Limiting**: Prevents brute force and resource exhaustion
+- **XSS Protection**: Safe DOM manipulation, no innerHTML with user input
+- **Clickjacking Prevention**: X-Frame-Options headers
+- **File Cleanup**: Automatic deletion of old files prevents disk exhaustion
+
+---
+
+## File Structure
+
+```
+base64server/
+├── app.py                    # Flask app & API endpoints
+├── requirements.txt          # Python dependencies
+├── README.md                 # This file
+├── templates/
+│   └── index.html           # Web UI (dark theme)
+├── files/                   # Temporary image storage (auto-cleaned)
+└── .gitignore               # Git ignore rules
+```
+
+---
+
+## Support & Contact
+
+Built by **Prajjwal Nag** - AI Automation Expert & Software Engineer
+
+- **GitHub**: [prajjwalnag](https://github.com/prajjwalnag)
+- **Facebook**: [mwragency](https://www.facebook.com/mwragency)
+- **Instagram**: [@mwragency](https://www.instagram.com/mwragency/)
+- **LinkedIn**: [prajjwalnag](https://www.linkedin.com/in/prajjwalnag/)
 
 ---
 
 ## License
 
-MIT License - feel free to use for personal and commercial projects.
+MIT License - Free to use for personal and commercial projects.
+
+Feel free to fork, modify, and distribute. See LICENSE file for details.
 
 ---
 
 ## Contributing
 
-Found a bug or have a feature request? Feel free to open an issue or submit a PR!
+Found a bug? Have a feature request? Contributions welcome!
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
-**Made with** ✨ **by MWR Agency**
+**Made with ❤️ by Prajjwal Nag**
